@@ -17,6 +17,11 @@
  *
  * Also see Documentation/locking/mutex-design.txt.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2017 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #include <linux/mutex.h>
 #include <linux/ww_mutex.h>
 #include <linux/sched.h>
@@ -537,7 +542,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 		goto skip_wait;
 
 	debug_mutex_lock_common(lock, &waiter);
-	debug_mutex_add_waiter(lock, &waiter, task_thread_info(task));
+	debug_mutex_add_waiter(lock, &waiter, task);
 
 	/* add waiting tasks to the end of the waitqueue (FIFO): */
 	list_add_tail(&waiter.list, &lock->wait_list);
@@ -584,7 +589,7 @@ __mutex_lock_common(struct mutex *lock, long state, unsigned int subclass,
 	}
 	__set_task_state(task, TASK_RUNNING);
 
-	mutex_remove_waiter(lock, &waiter, current_thread_info());
+	mutex_remove_waiter(lock, &waiter, task);
 	/* set it to 0 if there are no waiters left: */
 	if (likely(list_empty(&lock->wait_list)))
 		atomic_set(&lock->count, 0);
@@ -605,7 +610,7 @@ skip_wait:
 	return 0;
 
 err:
-	mutex_remove_waiter(lock, &waiter, task_thread_info(task));
+	mutex_remove_waiter(lock, &waiter, task);
 	spin_unlock_mutex(&lock->wait_lock, flags);
 	debug_mutex_free_waiter(&waiter);
 	mutex_release(&lock->dep_map, 1, ip);
@@ -912,6 +917,27 @@ int __sched mutex_trylock(struct mutex *lock)
 	return ret;
 }
 EXPORT_SYMBOL(mutex_trylock);
+
+int __sched mutex_trylock_spin(struct mutex *lock)
+{
+	int ret;
+
+	ret = __mutex_fastpath_trylock(&lock->count,
+					__mutex_trylock_slowpath);
+
+	if (!ret) {
+		preempt_disable();
+		ret = mutex_optimistic_spin(lock, NULL, 0);
+		if (ret)
+			mutex_acquire(&lock->dep_map, 0, 1, _RET_IP_);
+		preempt_enable();
+	}
+	if (ret)
+		mutex_set_owner(lock);
+
+	return ret;
+}
+EXPORT_SYMBOL(mutex_trylock_spin);
 
 #ifndef CONFIG_DEBUG_LOCK_ALLOC
 int __sched

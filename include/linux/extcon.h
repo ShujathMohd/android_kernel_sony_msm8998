@@ -22,6 +22,11 @@
  * GNU General Public License for more details.
  *
 */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2016 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef __LINUX_EXTCON_H__
 #define __LINUX_EXTCON_H__
@@ -55,6 +60,12 @@
 #define EXTCON_JACK_SPDIF_IN	26	/* Sony Philips Digital InterFace */
 #define EXTCON_JACK_SPDIF_OUT	27
 
+/* connector orientation 0 - CC1, 1 - CC2 */
+#define EXTCON_USB_CC		28
+
+/* connector speed 0 - High Speed, 1 - super speed */
+#define EXTCON_USB_SPEED	29
+
 /* Display external connector */
 #define EXTCON_DISP_HDMI	40	/* High-Definition Multimedia Interface */
 #define EXTCON_DISP_MHL		41	/* Mobile High-Definition Link */
@@ -66,7 +77,10 @@
 #define EXTCON_JIG		61
 #define EXTCON_MECHANICAL	62
 
-#define EXTCON_NUM		63
+/* Somc Extention */
+#define EXTCON_VBUS_DROP	63
+
+#define EXTCON_NUM		64
 
 struct extcon_cable;
 

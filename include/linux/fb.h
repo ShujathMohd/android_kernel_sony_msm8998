@@ -1,3 +1,8 @@
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifndef _LINUX_FB_H
 #define _LINUX_FB_H
 
@@ -163,6 +168,13 @@ struct fb_cursor_user {
 /*      A hardware display blank revert early change occured */
 #define FB_R_EARLY_EVENT_BLANK		0x11
 
+#ifdef CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL
+/*      A hardware display extension blank early change occurred */
+#define FB_EXT_EARLY_EVENT_BLANK	0xF0
+/*      A hardware display extension blank change occurred */
+#define FB_EXT_EVENT_BLANK		0xF1
+#endif /* CONFIG_FB_MSM_MDSS_SPECIFIC_PANEL */
+
 struct fb_event {
 	struct fb_info *info;
 	void *data;
@@ -288,9 +300,17 @@ struct fb_ops {
 	int (*fb_ioctl)(struct fb_info *info, unsigned int cmd,
 			unsigned long arg);
 
+	/* perform fb specific ioctl v2 (optional) - provides file param */
+	int (*fb_ioctl_v2)(struct fb_info *info, unsigned int cmd,
+			unsigned long arg, struct file *file);
+
 	/* Handle 32bit compat ioctl (optional) */
 	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
 			unsigned long arg);
+
+	/* Handle 32bit compat ioctl (optional) */
+	int (*fb_compat_ioctl_v2)(struct fb_info *info, unsigned cmd,
+			unsigned long arg, struct file *file);
 
 	/* perform fb specific mmap */
 	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
@@ -460,17 +480,8 @@ struct fb_info {
 	struct fb_cmap cmap;		/* Current cmap */
 	struct list_head modelist;      /* mode list */
 	struct fb_videomode *mode;	/* current mode */
+	struct file *file;		/* current file node */
 
-#ifdef CONFIG_FB_BACKLIGHT
-	/* assigned backlight device */
-	/* set before framebuffer registration, 
-	   remove after unregister */
-	struct backlight_device *bl_dev;
-
-	/* Backlight level curve */
-	struct mutex bl_curve_mutex;	
-	u8 bl_curve[FB_BACKLIGHT_LEVELS];
-#endif
 #ifdef CONFIG_FB_DEFERRED_IO
 	struct delayed_work deferred_work;
 	struct fb_deferred_io *fbdefio;

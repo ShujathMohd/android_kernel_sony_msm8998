@@ -3,6 +3,11 @@
  * to be __user pointers not __kernel pointers.  To limit the sparse
  * noise, turn off sparse checking for this file.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifdef __CHECKER__
 #undef __CHECKER__
 #warning "Sparse checking disabled for this file"
@@ -18,6 +23,7 @@
 #include <linux/dirent.h>
 #include <linux/syscalls.h>
 #include <linux/utime.h>
+#include <linux/initramfs.h>
 
 static ssize_t __init xwrite(int fd, const char *p, size_t count)
 {
@@ -605,9 +611,28 @@ static void __init clean_rootfs(void)
 }
 #endif
 
+static int __initdata do_skip_initramfs;
+
+static int __init skip_initramfs_param(char *str)
+{
+	if (*str)
+		return 0;
+	do_skip_initramfs = 1;
+	return 1;
+}
+__setup("skip_initramfs", skip_initramfs_param);
+
 static int __init populate_rootfs(void)
 {
-	char *err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
+	char *err;
+
+	if (do_skip_initramfs) {
+		if (initrd_start)
+			free_initrd();
+		return default_rootfs();
+	}
+
+	err = unpack_to_rootfs(__initramfs_start, __initramfs_size);
 	if (err)
 		panic("%s", err); /* Failed to decompress INTERNAL initramfs */
 	if (initrd_start) {
@@ -616,6 +641,8 @@ static int __init populate_rootfs(void)
 		printk(KERN_INFO "Trying to unpack rootfs image as initramfs...\n");
 		err = unpack_to_rootfs((char *)initrd_start,
 			initrd_end - initrd_start);
+		if (err)
+			panic("panic in %s()", __func__);
 		if (!err) {
 			free_initrd();
 			goto done;

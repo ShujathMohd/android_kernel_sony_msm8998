@@ -3,6 +3,11 @@
  *
  * Copyright (c) 1999-2002 Vojtech Pavlik
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2013 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 /*
  * This program is free software; you can redistribute it and/or modify it
@@ -1667,8 +1672,14 @@ void input_reset_device(struct input_dev *dev)
 	mutex_lock(&dev->mutex);
 	spin_lock_irqsave(&dev->event_lock, flags);
 
-	input_dev_toggle(dev, true);
-	input_dev_release_keys(dev);
+	/*
+	 * Keys that have been pressed at suspend time are unlikely
+	 * to be still pressed when we resume.
+	 */
+	if (!test_bit(INPUT_PROP_NO_DUMMY_RELEASE, dev->propbit)) {
+		input_dev_toggle(dev, true);
+		input_dev_release_keys(dev);
+	}
 
 	spin_unlock_irqrestore(&dev->event_lock, flags);
 	mutex_unlock(&dev->mutex);

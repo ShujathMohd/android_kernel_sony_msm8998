@@ -9,6 +9,11 @@
  * it under the terms of the GNU General Public License version 2 as
  * published by the Free Software Foundation.
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2013 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #include <linux/device.h>
 #include <linux/slab.h>
@@ -1822,7 +1827,7 @@ EXPORT_SYMBOL_GPL(regmap_bulk_write);
  * they are all in the same page and have been changed to being page
  * relative. The page register has been written if that was necessary.
  */
-static int _regmap_raw_multi_reg_write(struct regmap *map,
+int _regmap_raw_multi_reg_write(struct regmap *map,
 				       const struct reg_sequence *regs,
 				       size_t num_regs)
 {

@@ -17,6 +17,11 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2014 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 
 #ifndef _LINUX_PM_H
 #define _LINUX_PM_H
@@ -573,6 +578,7 @@ struct dev_pm_info {
 	struct wakeup_source	*wakeup;
 	bool			wakeup_path:1;
 	bool			syscore:1;
+	bool			no_pm_callbacks:1;	/* Owned by the PM core */
 #else
 	unsigned int		should_wakeup:1;
 #endif
@@ -701,6 +707,11 @@ extern int dpm_suspend_noirq(pm_message_t state);
 extern int dpm_suspend_late(pm_message_t state);
 extern int dpm_suspend(pm_message_t state);
 extern int dpm_prepare(pm_message_t state);
+
+#ifdef CONFIG_PM_WAKEUP_TIMES
+extern void dpm_log_start_time(pm_message_t state);
+extern void dpm_log_wakeup_stats(pm_message_t state);
+#endif
 
 extern void __suspend_report_result(const char *function, void *fn, int ret);
 

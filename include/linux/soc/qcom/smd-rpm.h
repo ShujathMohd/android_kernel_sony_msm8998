@@ -1,3 +1,8 @@
+/*
+ * NOTE: This file has been modified by Sony Mobile Communications Inc.
+ * Modifications are Copyright (c) 2015 Sony Mobile Communications Inc,
+ * and licensed under the license of the file.
+ */
 #ifndef __QCOM_SMD_RPM_H__
 #define __QCOM_SMD_RPM_H__
 
@@ -26,6 +31,10 @@ struct qcom_smd_rpm;
 #define QCOM_SMD_RPM_SMPB	0x62706d73
 #define QCOM_SMD_RPM_SPDM	0x63707362
 #define QCOM_SMD_RPM_VSA	0x00617376
+#define QCOM_SMD_RPM_MMAXI_CLK	0x69786d6d
+#define QCOM_SMD_RPM_IPA_CLK	0x617069
+#define QCOM_SMD_RPM_CE_CLK	0x6563
+#define QCOM_SMD_RPM_AGGR_CLK	0x72676761
 
 int qcom_rpm_smd_write(struct qcom_smd_rpm *rpm,
 		       int state,
